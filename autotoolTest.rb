@@ -6,6 +6,8 @@ require 'mysql'
 require 'yaml'
 
 class AutotoolTest < MiniTest::Test
+  parallelize_me!()
+
   def setup
     @config = YAML.load_file 'config.yaml'
     @ui = YAML.load_file 'ui.yaml'
@@ -34,7 +36,55 @@ class AutotoolTest < MiniTest::Test
     accountEntfernen(mnr, vorname, name, email)
   end
 
-  def accountAnlegen (mnr, vorname, name, email)
+  def test_login
+    mnr = testWort
+    vorname = testWort
+    name = testWort
+    email = @config['email']
+    assert_equal(false, existiertAccount?(mnr, vorname, name, email))
+    accountAnlegen(mnr, vorname, name, email)
+    assert_equal(true, existiertAccount?(mnr, vorname, name, email))
+    setPassword(mnr, vorname, name, email)
+    assert_equal(false, element_present?(:id, @ui['administratorButton']))
+    login(mnr)
+    assert_equal(true, element_present?(:id, @ui['administratorButton']))
+    accountEntfernen(mnr, vorname, name, email)
+  end
+
+  def test_logout
+    mnr = testWort
+    vorname = testWort
+    name = testWort
+    email = @config['email']
+    assert_equal(false, existiertAccount?(mnr, vorname, name, email))
+    accountAnlegen(mnr, vorname, name, email)
+    assert_equal(true, existiertAccount?(mnr, vorname, name, email))
+    setPassword(mnr, vorname, name, email)
+    assert_equal(false, element_present?(:id, @ui['administratorButton']))
+    login(mnr)
+    assert_equal(true, element_present?(:id, @ui['administratorButton']))
+    accountEntfernen(mnr, vorname, name, email)
+  end
+
+  def loginFunktion
+    mnr = testWort
+    vorname = testWort
+    name = testWort
+    email = @config['email']
+    assert_equal(false, existiertAccount?(mnr, vorname, name, email))
+    accountAnlegen(mnr, vorname, name, email)
+    assert_equal(true, existiertAccount?(mnr, vorname, name, email))
+    setPassword(mnr, vorname, name, email)
+    assert_equal(false, element_present?(:id, @ui['administratorButton']))
+    login(mnr)
+    assert_equal(true, element_present?(:id, @ui['administratorButton']))
+    yield
+    logout
+    assert_equal(false, element_present?(:id, @ui['administratorButton']))
+    accountEntfernen(mnr, vorname, name, email)
+  end
+
+  def accountAnlegen(mnr, vorname, name, email)
     @driver.get(@base_url + "/cgi-bin/Super.cgi?school=" + @config['schule'])
     @driver.find_element(:id, @ui['accountAnlegenButton']).click
     @driver.find_element(:id, @ui['accountAnlegenMNr']).clear
@@ -49,6 +99,24 @@ class AutotoolTest < MiniTest::Test
     @driver.find_element(:id, @ui['accountAnlegenSubmit2']).click
   end
 
+  def login(mnr)
+    @driver.get(@base_url + "/cgi-bin/Super.cgi?school=" + @config['schule'])
+    @driver.find_element(:id, @ui['loginButton']).click
+    @driver.find_element(:id, @ui['loginMNr']).clear
+    @driver.find_element(:id, @ui['loginMNr']).send_keys mnr
+    @driver.find_element(:id, @ui['loginPasswort']).clear
+    @driver.find_element(:id, @ui['loginPasswort']).send_keys 'foobar'
+    @driver.find_element(:id, @ui['loginSubmit']).click
+  end
+
+  def logout
+    @driver.get(@base_url + "/cgi-bin/Super.cgi?school=" + @config['schule'])
+  end
+
+  def setPassword(mnr, vorname, name, email)
+    @db.query 'UPDATE student SET passwort=\'chkiekhnadijknnbaneblbklikeepmgbbgodniig\' WHERE mnr =\'' + mnr + '\' AND name = \'' + name +  '\' AND vorname = \'' + vorname + '\' AND email = \'' + email + '\''
+  end
+
   def existiertAccount? (mnr, vorname, name, email)
     studenten = @db.query 'SELECT * FROM student WHERE mnr =\'' + mnr + '\' AND name = \'' + name +  '\' AND vorname = \'' + vorname + '\' AND email = \'' + email + '\''
     studenten.num_rows > 0
@@ -56,6 +124,13 @@ class AutotoolTest < MiniTest::Test
 
   def accountEntfernen (mnr, vorname, name, email)
     rs = @db.query 'DELETE FROM student WHERE mnr =\'' + mnr + '\' AND name = \'' + name +  '\' AND vorname = \'' + vorname + '\' AND email = \'' + email + '\''
+  end
+
+  def element_present?(how, what)
+    @driver.find_element(how, what)
+    true
+  rescue Selenium::WebDriver::Error::NoSuchElementError
+    false
   end
 
   def teardown
