@@ -6,11 +6,11 @@ require 'mysql'
 require 'yaml'
 
 class AutotoolTest < MiniTest::Test
-  parallelize_me!()
 
   def setup
     @config = YAML.load_file 'config.yaml'
     @ui = YAML.load_file 'ui.yaml'
+    @fehler = YAML.load_file 'fehler.yaml'
     @base_url = @config['url']
     @driver = Selenium::WebDriver.for(:firefox)
     @db = Mysql.new @config['dbServer'], @config['dbUser'], @config['dbPasswort'], @config['db']
@@ -25,92 +25,67 @@ class AutotoolTest < MiniTest::Test
     "TEST" + zufallsWort(8)
   end
 
-  def test_accountAnlegen
-    mnr = testWort
-    vorname = testWort
-    name = testWort
-    email = @config['email']
-    assert_equal(false, existiertAccount?(mnr, vorname, name, email))
-    accountAnlegen(mnr, vorname, name, email)
-    assert_equal(true, existiertAccount?(mnr, vorname, name, email))
-    accountEntfernen(mnr, vorname, name, email)
+  def mitSchuleAccount(funktion)
+    mitSchule(->(name) {
+      schule = getSchule(name)
+      mitAccount(schule['UNr'], ->(mnr) {
+        funktion.call(schule, mnr)
+      })
+    })
   end
 
-  def test_login
+  def mitAccount(unr, funktion)
     mnr = testWort
     vorname = testWort
     name = testWort
     email = @config['email']
-    assert_equal(false, existiertAccount?(mnr, vorname, name, email))
-    accountAnlegen(mnr, vorname, name, email)
-    assert_equal(true, existiertAccount?(mnr, vorname, name, email))
+    angelegt = accountAnlegen(mnr, unr, vorname, name, email)
     setPassword(mnr, vorname, name, email)
-    assert_equal(false, element_present?(:id, @ui['administratorButton']))
-    login(mnr)
-    assert_equal(true, element_present?(:id, @ui['administratorButton']))
-    accountEntfernen(mnr, vorname, name, email)
+    funktion.call(mnr)
+  ensure
+    accountEntfernen(mnr, vorname, name, email) unless !angelegt
   end
 
-  def test_logout
-    mnr = testWort
-    vorname = testWort
+  def mitSchule(funktion)
     name = testWort
-    email = @config['email']
-    assert_equal(false, existiertAccount?(mnr, vorname, name, email))
-    accountAnlegen(mnr, vorname, name, email)
-    assert_equal(true, existiertAccount?(mnr, vorname, name, email))
-    setPassword(mnr, vorname, name, email)
-    assert_equal(false, element_present?(:id, @ui['administratorButton']))
-    login(mnr)
-    assert_equal(true, element_present?(:id, @ui['administratorButton']))
-    accountEntfernen(mnr, vorname, name, email)
+    angelegt = schuleAnlegen(name)
+    funktion.call(name)
+  ensure
+    schuleEntfernen(name) unless !angelegt
   end
 
-  def loginFunktion
-    mnr = testWort
-    vorname = testWort
-    name = testWort
-    email = @config['email']
-    assert_equal(false, existiertAccount?(mnr, vorname, name, email))
-    accountAnlegen(mnr, vorname, name, email)
-    assert_equal(true, existiertAccount?(mnr, vorname, name, email))
-    setPassword(mnr, vorname, name, email)
-    assert_equal(false, element_present?(:id, @ui['administratorButton']))
-    login(mnr)
-    assert_equal(true, element_present?(:id, @ui['administratorButton']))
-    yield
-    logout
-    assert_equal(false, element_present?(:id, @ui['administratorButton']))
-    accountEntfernen(mnr, vorname, name, email)
+  def schuleAnlegen(name)
+    existiert = existiertSchule?(name)
+    assert(!existiert, @fehler['vorSchule'])
+    @db.query 'INSERT INTO schule (name, preferred_language, mail_suffix, use_shibboleth) VALUES (\'' + name + '\', \'DE\', \'\', 0)'
+    angelegt = existiertSchule?(name)
+    assert(angelegt, @fehler['nachSchule'])
+    angelegt
   end
 
-  def accountAnlegen(mnr, vorname, name, email)
-    @driver.get(@base_url + "/cgi-bin/Super.cgi?school=" + @config['schule'])
-    @driver.find_element(:id, @ui['accountAnlegenButton']).click
-    @driver.find_element(:id, @ui['accountAnlegenMNr']).clear
-    @driver.find_element(:id, @ui['accountAnlegenMNr']).send_keys mnr
-    @driver.find_element(:id, @ui['accountAnlegenVorname']).clear
-    @driver.find_element(:id, @ui['accountAnlegenVorname']).send_keys vorname
-    @driver.find_element(:id, @ui['accountAnlegenName']).clear
-    @driver.find_element(:id, @ui['accountAnlegenName']).send_keys name
-    @driver.find_element(:id, @ui['accountAnlegenEmail']).clear
-    @driver.find_element(:id, @ui['accountAnlegenEmail']).send_keys email
-    @driver.find_element(:id, @ui['accountAnlegenSubmit1']).click
-    @driver.find_element(:id, @ui['accountAnlegenSubmit2']).click
+  def getSchule(name)
+    schulen = @db.query 'SELECT * FROM schule WHERE name =\'' + name + '\''
+    schulen.each_hash do |schule|
+      return schule
+    end
   end
 
-  def login(mnr)
-    @driver.get(@base_url + "/cgi-bin/Super.cgi?school=" + @config['schule'])
-    @driver.find_element(:id, @ui['loginButton']).click
-    @driver.find_element(:id, @ui['loginMNr']).clear
-    @driver.find_element(:id, @ui['loginMNr']).send_keys mnr
-    @driver.find_element(:id, @ui['loginPasswort']).clear
-    @driver.find_element(:id, @ui['loginPasswort']).send_keys 'foobar'
-    @driver.find_element(:id, @ui['loginSubmit']).click
+  def schuleEntfernen(name)
+    schulen = @db.query 'DELETE FROM schule WHERE name =\'' + name + '\''
   end
 
-  def logout
-    @driver.get(@base_url + "/cgi-bin/Super.cgi?school=" + @config['schule'])
+  def existiertSchule?(name)
+    schulen = @db.query 'SELECT * FROM schule WHERE name =\'' + name + '\''
+    schulen.num_rows > 0
+  end
+
+  def accountAnlegen(mnr, unr, vorname, name, email)
+    existiert = existiertAccount?(mnr, vorname, name, email)
+    assert(!existiert, @fehler['vorAccount'])
+    @db.query 'INSERT INTO student (mnr, unr, name, vorname, email) VALUES (\'' + mnr + '\', \'' + unr + '\', \'' + name +  '\', \'' + vorname + '\', \'' + email + '\')'
+    angelegt = existiertAccount?(mnr, vorname, name, email)
+    assert(angelegt, @fehler['nachAccount'])
+    angelegt
   end
 
   def setPassword(mnr, vorname, name, email)
