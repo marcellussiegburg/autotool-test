@@ -6,7 +6,6 @@ require 'mysql'
 require 'yaml'
 
 class AutotoolTest < MiniTest::Test
-
   def setup
     @config = YAML.load_file 'config.yaml'
     @ui = YAML.load_file 'ui.yaml'
@@ -28,8 +27,8 @@ class AutotoolTest < MiniTest::Test
   def mitSchuleAccount(funktion)
     mitSchule(->(name) {
       schule = getSchule(name)
-      mitAccount(schule['UNr'], ->(mnr) {
-        funktion.call(schule, mnr)
+      mitAccount(schule['UNr'], ->(student) {
+        funktion.call(schule, student)
       })
     })
   end
@@ -41,7 +40,8 @@ class AutotoolTest < MiniTest::Test
     email = @config['email']
     angelegt = accountAnlegen(mnr, unr, vorname, name, email)
     setPassword(mnr, vorname, name, email)
-    funktion.call(mnr)
+    student = getStudent(mnr, vorname, name, email)
+    funktion.call(student)
   ensure
     accountEntfernen(mnr, vorname, name, email) unless !angelegt
   end
@@ -52,6 +52,24 @@ class AutotoolTest < MiniTest::Test
     funktion.call(name)
   ensure
     schuleEntfernen(name) unless !angelegt
+  end
+
+  def adminAnlegen(snr)
+    existiert = existiertAdmin?(snr)
+    assert(!existiert, @fehler['vorAdmin'])
+    @db.query 'INSERT INTO minister (SNr) VALUES (' + snr + ')'
+    angelegt = existiertAdmin?(snr)
+    assert(angelegt, @fehler['nachAdmin'])
+    angelegt
+  end
+
+  def adminEntfernen(snr)
+    schulen = @db.query 'DELETE FROM minister WHERE snr =' + snr
+  end
+
+  def existiertAdmin?(snr)
+    schulen = @db.query 'SELECT * FROM minister WHERE snr =' + snr
+    schulen.num_rows > 0
   end
 
   def schuleAnlegen(name)
@@ -95,6 +113,13 @@ class AutotoolTest < MiniTest::Test
   def existiertAccount? (mnr, vorname, name, email)
     studenten = @db.query 'SELECT * FROM student WHERE mnr =\'' + mnr + '\' AND name = \'' + name +  '\' AND vorname = \'' + vorname + '\' AND email = \'' + email + '\''
     studenten.num_rows > 0
+  end
+
+  def getStudent (mnr, vorname, name, email)
+    studenten = @db.query 'SELECT * FROM student WHERE mnr =\'' + mnr + '\' AND name = \'' + name +  '\' AND vorname = \'' + vorname + '\' AND email = \'' + email + '\''
+    studenten.each_hash do |student|
+      return student
+    end
   end
 
   def accountEntfernen (mnr, vorname, name, email)

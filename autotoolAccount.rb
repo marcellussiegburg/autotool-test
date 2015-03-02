@@ -1,37 +1,24 @@
 require 'rubygems'
 require_relative 'autotoolTest'
 
-class AccountTest < AutotoolTest
-  parallelize_me!()
-
-  def test_accountAnlegen
-    mnr = testWort
-    vorname = testWort
-    name = testWort
-    email = @config['email']
-    angelegt = accountAnlegenGui(mnr, vorname, name, email)
+class AutotoolAccount < AutotoolTest
+  def ensureAdmin(name, student, funktion)
+    admin = adminAnlegen(student['SNr'])
+    ensureEingeloggt(name, student['MNr'], funktion)
   ensure
-    accountEntfernen(mnr, vorname, name, email) unless !angelegt
+    adminEntfernen(student['SNr']) unless !admin
   end
 
-  def test_login
-    login = ->(schule, mnr) {
-      login(schule['Name'], mnr)
-    }
-    mitSchuleAccount(login)
-  end
-
-  def test_logout
-    logout = ->(schule, mnr) {
-      login(schule['Name'], mnr)
-      logout()
-    }
-    mitSchuleAccount(logout)
+  def ensureEingeloggt(name, mnr, funktion)
+    eingeloggt = login(name, mnr)
+    funktion.call
+  ensure
+    logout() unless !eingeloggt
   end
 
   def accountAnlegenGui(mnr, vorname, name, email)
     existiert = existiertAccount?(mnr, vorname, name, email)
-    assert_equal(false, existiert, 'Account existiert bereits')
+    assert(!existiert, @fehler['vorAccount'])
     @driver.get(@base_url + "/cgi-bin/Super.cgi?school=" + @config['schule'])
     @driver.find_element(:id, @ui['accountAnlegenButton']).click
     @driver.find_element(:id, @ui['accountAnlegenMNr']).clear
@@ -45,7 +32,7 @@ class AccountTest < AutotoolTest
     @driver.find_element(:id, @ui['accountAnlegenSubmit1']).click
     @driver.find_element(:id, @ui['accountAnlegenSubmit2']).click
     angelegt = existiertAccount?(mnr, vorname, name, email)
-    assert_equal(true, angelegt, 'Account wurde nicht angelegt')
+    assert(angelegt, @fehler['nachAccount'])
     angelegt
   end
 
@@ -58,11 +45,12 @@ class AccountTest < AutotoolTest
     @driver.find_element(:id, @ui['loginPasswort']).clear
     @driver.find_element(:id, @ui['loginPasswort']).send_keys 'foobar'
     @driver.find_element(:id, @ui['loginSubmit']).click
-    assert(@driver.find_element(:tag_name, 'form').text.include?("Semester"), @fehler['nachLogin'])
+    eingeloggt = @driver.find_element(:tag_name, 'form').text.include?("Semester")
+    assert(eingeloggt, @fehler['nachLogin'])
+    eingeloggt
   end
 
   def logout
-    assert(@driver.find_element(:tag_name, 'form').text.include?("Semester"), @fehler['vorLogout'])
     @driver.get(@base_url + "/cgi-bin/Super.cgi?school=" + @config['schule'])
     assert(!@driver.find_element(:tag_name, 'form').text.include?("Semester"), @fehler['nachLogout'])
   end

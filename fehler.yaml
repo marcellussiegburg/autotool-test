@@ -1,5 +1,7 @@
 vorAccount: Account existiert bereits
 nachAccount: Account wurde nicht angelegt
+vorAdmin: Admin existiert bereits
+nachAdmin: Admin wurde nicht angelegt
 vorLogin: Bereits eingeloggt
 nachLogin: Einloggen fehlgeschlagen
 vorLogout: Nicht eingeloggt
