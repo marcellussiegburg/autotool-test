@@ -14,4 +14,13 @@ class AutotoolSchuleTest < AutotoolSchule
   ensure
     schuleEntfernen(nameNeu) unless !angelegt
   end
+
+  def test_schuleBearbeiten
+    name = testWort
+    suffix = testWort
+    schuleBearbeiten = ->(schule, student) {
+      ensureAdmin(schule['Name'], student, ->() {schuleBearbeiten(schule, name, suffix)})
+    }
+    mitSchuleAccount(schuleBearbeiten)
+  end
 end

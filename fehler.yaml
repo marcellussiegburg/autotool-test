@@ -6,5 +6,7 @@ vorLogin: Bereits eingeloggt
 nachLogin: Einloggen fehlgeschlagen
 vorLogout: Nicht eingeloggt
 nachLogout: Ausloggen fehlgeschlagen
+keineSchule: Schule existiert nicht
 vorSchule: Schule existiert bereits
 nachSchule: Schule wurde nicht angelegt
+nichtBearbeitetSchule: Schule wurde nicht bearbeitet
