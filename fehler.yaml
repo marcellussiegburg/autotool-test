@@ -2,6 +2,10 @@ vorAccount: Account existiert bereits
 nachAccount: Account wurde nicht angelegt
 vorAdmin: Admin existiert bereits
 nachAdmin: Admin wurde nicht angelegt
+keinDirektor: Direktor existiert nicht
+vorDirektor: Direktor existiert bereits
+nachDirektor: Direktor wurde nicht angelegt
+nochDirektor: Direktor existiert noch
 vorLogin: Bereits eingeloggt
 nachLogin: Einloggen fehlgeschlagen
 vorLogout: Nicht eingeloggt

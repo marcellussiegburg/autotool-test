@@ -54,6 +54,24 @@ class AutotoolTest < MiniTest::Test
     schuleEntfernen(name) unless !angelegt
   end
 
+  def direktorAnlegen(snr, unr)
+    existiert = existiertDirektor?(snr, unr)
+    assert(!existiert, @fehler['vorDirektor'])
+    @db.query 'INSERT INTO direktor (SNr, UNr) VALUES (' + snr + ',' + unr + ')'
+    angelegt = existiertDirektor?(snr, unr)
+    assert(angelegt, @fehler['nachDirektor'])
+    angelegt
+  end
+
+  def direktorEntfernen(snr, unr)
+    direktoren = @db.query 'DELETE FROM direktor WHERE SNr =' + snr + ' AND UNr = ' + unr
+  end
+
+  def existiertDirektor?(snr, unr)
+    direktoren = @db.query 'SELECT * FROM direktor WHERE SNr = ' + snr + ' AND UNr = ' + unr
+    direktoren.num_rows > 0
+  end
+
   def adminAnlegen(snr)
     existiert = existiertAdmin?(snr)
     assert(!existiert, @fehler['vorAdmin'])
@@ -64,12 +82,12 @@ class AutotoolTest < MiniTest::Test
   end
 
   def adminEntfernen(snr)
-    schulen = @db.query 'DELETE FROM minister WHERE snr =' + snr
+    administratoren = @db.query 'DELETE FROM minister WHERE SNr = ' + snr
   end
 
   def existiertAdmin?(snr)
-    schulen = @db.query 'SELECT * FROM minister WHERE snr =' + snr
-    schulen.num_rows > 0
+    administratoren = @db.query 'SELECT * FROM minister WHERE SNr = ' + snr
+    administratoren.num_rows > 0
   end
 
   def schuleAnlegen(name)
