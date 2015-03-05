@@ -11,7 +11,7 @@ class AutotoolSchuleTest < AutotoolDirektor
     mitSchuleAccount(direktorAnlegen)
   end
 
-  def test_schuleBearbeiten
+  def test_direktorAbsetzen
     direktorAbsetzen = ->(schule, student) {
       direktorAnlegen(student['SNr'], schule['UNr'])
       ensureAdmin(schule['Name'], student, ->() {direktorAbsetzen(schule, student)})

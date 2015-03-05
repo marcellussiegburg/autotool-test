@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'rubygems'
 gem 'minitest'
 require 'minitest/autorun'
@@ -54,6 +55,24 @@ class AutotoolTest < MiniTest::Test
     schuleEntfernen(name) unless !angelegt
   end
 
+  def tutorAnlegen(snr, vnr)
+    existiert = existiertTutor?(snr, vnr)
+    assert(!existiert, @fehler['vorTutor'])
+    @db.query 'INSERT INTO tutor (SNr, VNr) VALUES (' + snr + ',' + vnr + ')'
+    angelegt = existiertTutor?(snr, vnr)
+    assert(angelegt, @fehler['nachTutor'])
+    angelegt
+  end
+
+  def tutorEntfernen(snr, vnr)
+    tutoren = @db.query 'DELETE FROM tutor WHERE SNr =' + snr + ' AND VNr = ' + vnr
+  end
+
+  def existiertTutor?(snr, vnr)
+    tutoren = @db.query 'SELECT * FROM tutor WHERE SNr = ' + snr + ' AND VNr = ' + vnr
+    tutoren.num_rows > 0
+  end
+
   def direktorAnlegen(snr, unr)
     existiert = existiertDirektor?(snr, unr)
     assert(!existiert, @fehler['vorDirektor'])
@@ -90,6 +109,33 @@ class AutotoolTest < MiniTest::Test
     administratoren.num_rows > 0
   end
 
+  def semesterAnlegen(unr, name)
+    existiert = existiertSemester?(unr, name)
+    assert(!existiert, @fehler['vorSemester'])
+    anfang = Time.now
+    ende = Time.now + (60 * 60 * 24 * 31)
+    @db.query 'INSERT INTO semester (UNr, Name, Von, Bis) VALUES (' + unr + ', \'' + name + '\', \'' + anfang.strftime('%Y-%m-%d %H:%M:%S') + '\', \'' + ende.strftime('%Y-%m-%d %H:%M:%S') + '\')'
+    angelegt = existiertSemester?(unr, name)
+    assert(angelegt, @fehler['nachSemester'])
+    angelegt
+  end
+
+  def getSemester(unr, name)
+    semesters = @db.query 'SELECT * FROM semester WHERE UNr = ' + unr + ' AND Name = \'' + name + '\''
+    semesters.each_hash do |semester|
+      return semester
+    end
+  end
+
+  def existiertSemester?(unr, name)
+    schulen = @db.query 'SELECT * FROM semester WHERE UNr = ' + unr + ' AND Name = \'' + name + '\''
+    schulen.num_rows > 0
+  end
+
+  def semesterEntfernen(unr, name)
+    semesters = @db.query 'DELETE FROM semester WHERE UNr = ' + unr + ' AND Name = \'' + name + '\''
+  end
+
   def schuleAnlegen(name)
     existiert = existiertSchule?(name)
     assert(!existiert, @fehler['vorSchule'])
@@ -118,7 +164,7 @@ class AutotoolTest < MiniTest::Test
   def accountAnlegen(mnr, unr, vorname, name, email)
     existiert = existiertAccount?(mnr, vorname, name, email)
     assert(!existiert, @fehler['vorAccount'])
-    @db.query 'INSERT INTO student (mnr, unr, name, vorname, email) VALUES (\'' + mnr + '\', \'' + unr + '\', \'' + name +  '\', \'' + vorname + '\', \'' + email + '\')'
+    @db.query 'INSERT INTO student (mnr, unr, name, vorname, email) VALUES (\'' + mnr + '\', ' + unr + ', \'' + name +  '\', \'' + vorname + '\', \'' + email + '\')'
     angelegt = existiertAccount?(mnr, vorname, name, email)
     assert(angelegt, @fehler['nachAccount'])
     angelegt
@@ -144,11 +190,34 @@ class AutotoolTest < MiniTest::Test
     rs = @db.query 'DELETE FROM student WHERE mnr =\'' + mnr + '\' AND name = \'' + name +  '\' AND vorname = \'' + vorname + '\' AND email = \'' + email + '\''
   end
 
+  def select_element(how, what, option)
+    @driver.find_elements(how, what).find do |button|
+      button.attribute('value') == option
+    end.click
+  end
+
   def element_present?(how, what)
     @driver.find_element(how, what)
     true
   rescue Selenium::WebDriver::Error::NoSuchElementError
     false
+  end
+
+  def monate
+    return {
+      "00" => nil,
+      "01" => "Januar",
+      "02" => "Februar",
+      "03" => "März",
+      "04" => "April",
+      "05" => "Mai",
+      "06" => "Juni",
+      "07" => "Juli",
+      "08" => "August",
+      "09" => "September",
+      "10" => "Oktober",
+      "11" => "November",
+      "12" => "Dezember"}
   end
 
   def teardown

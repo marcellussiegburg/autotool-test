@@ -2,6 +2,13 @@ require 'rubygems'
 require_relative 'autotoolTest'
 
 class AutotoolAccount < AutotoolTest
+  def ensureDirektor(schule, student, funktion)
+    direktor = direktorAnlegen(student['SNr'], schule['UNr'])
+    ensureEingeloggt(schule['Name'], student['MNr'], funktion)
+  ensure
+    direktorEntfernen(student['SNr'], schule['UNr']) unless !direktor
+  end
+
   def ensureAdmin(name, student, funktion)
     admin = adminAnlegen(student['SNr'])
     ensureEingeloggt(name, student['MNr'], funktion)
