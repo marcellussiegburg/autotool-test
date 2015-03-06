@@ -14,5 +14,9 @@ keineSchule: Schule existiert nicht
 vorSchule: Schule existiert bereits
 nachSchule: Schule wurde nicht angelegt
 nichtBearbeitetSchule: Schule wurde nicht bearbeitet
+keinSemester: Semester existiert nicht
+vorSemester: Semester existiert bereits
+nachSemester: Semester wurde nicht angelegt
+nichtBearbeitetSemester: Semester wurde nicht bearbeitet
 vorTutor: Tutor existiert bereits
 nachTutor: Tutor wurde nicht angelegt

@@ -12,6 +12,7 @@ class AutotoolTest < MiniTest::Test
     @ui = YAML.load_file 'ui.yaml'
     @fehler = YAML.load_file 'fehler.yaml'
     @base_url = @config['url']
+    sleep(5)
     @driver = Selenium::WebDriver.for(:firefox)
     @db = Mysql.new @config['dbServer'], @config['dbUser'], @config['dbPasswort'], @config['db']
   end
@@ -191,8 +192,12 @@ class AutotoolTest < MiniTest::Test
   end
 
   def select_element(how, what, option)
+    @driver.find_element(how, what).send_key option
+  end
+
+  def click_element(how, what, option)
     @driver.find_elements(how, what).find do |button|
-      button.attribute('value') == option
+       button.attribute('value') == option
     end.click
   end
 

@@ -1,9 +1,6 @@
-require 'rubygems'
 require_relative 'autotoolDirektor'
 
-class AutotoolSchuleTest < AutotoolDirektor
-  parallelize_me!()
-
+class AutotoolDirektorTest < AutotoolDirektor
   def test_direktorAnlegen
     direktorAnlegen = ->(schule, student) {
       ensureAdmin(schule['Name'], student, ->() {direktorErnennen(schule, student)})

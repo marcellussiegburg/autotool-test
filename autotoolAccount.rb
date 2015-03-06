@@ -1,4 +1,3 @@
-require 'rubygems'
 require_relative 'autotoolTest'
 
 class AutotoolAccount < AutotoolTest

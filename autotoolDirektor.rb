@@ -1,4 +1,4 @@
-require 'rubygems'
+# -*- coding: utf-8 -*-
 require_relative 'autotoolAccount'
 
 class AutotoolDirektor < AutotoolAccount
@@ -11,9 +11,7 @@ class AutotoolDirektor < AutotoolAccount
     end.click
     @driver.find_element(:xpath, "/html/body/form/table[5]/tbody/tr/td[2]/input[2]").click
     @driver.find_element(:xpath, "/html/body/form/table[6]/tbody/tr/td[2]/input[1]").click
-    @driver.find_elements(:xpath, "/html/body/form/table[7]/tbody/tr/td[2]/select").find do |option|
-      option.text == student['MNr'] + ' ' + student['Vorname'] + ' ' + student['Name']
-    end.click
+    click_element(:xpath, "/html/body/form/table[7]/tbody/tr/td[2]/select", student['MNr'] + ' ' + student['Vorname'] + ' ' + student['Name'])
     @driver.find_element(:xpath, "/html/body/form/table[7]/tbody/tr/td[3]/input").click
     @driver.find_elements(:xpath, "/html/body/form/input[@type='submit']")[2].click
     angelegt = existiertDirektor?(student['SNr'], schule['UNr'])
@@ -32,9 +30,7 @@ class AutotoolDirektor < AutotoolAccount
     end.click
     @driver.find_element(:xpath, "/html/body/form/table[5]/tbody/tr/td[2]/input[2]").click
     @driver.find_element(:xpath, "/html/body/form/table[6]/tbody/tr/td[2]/input[2]").click
-    @driver.find_elements(:xpath, "/html/body/form/table[7]/tbody/tr/td[2]/select").find do |option|
-      option.text == student['MNr'] + ' ' + student['Vorname'] + ' ' + student['Name']
-    end.click
+    click_element(:xpath, "/html/body/form/table[7]/tbody/tr/td[2]/select", student['MNr'] + ' ' + student['Vorname'] + ' ' + student['Name'])
     @driver.find_element(:xpath, "/html/body/form/table[7]/tbody/tr/td[3]/input").click
     @driver.find_elements(:xpath, "/html/body/form/input[@type='submit']")[2].click
     existiertNoch = existiertDirektor?(student['SNr'], schule['UNr'])
