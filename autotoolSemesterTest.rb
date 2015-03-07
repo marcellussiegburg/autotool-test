@@ -1,7 +1,7 @@
 require 'rubygems'
 require_relative 'autotoolSemester'
 
-class AutotoolSchuleTest < AutotoolSemester
+class AutotoolSemesterTest < AutotoolSemester
   parallelize_me!()
 
   def test_semesterAnlegen

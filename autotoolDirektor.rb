@@ -6,9 +6,7 @@ class AutotoolDirektor < AutotoolAccount
     existiert = existiertDirektor?(student['SNr'], schule['UNr'])
     assert(!existiert, @fehler['vorDirektor'])
     @driver.find_element(:id, @ui['administratorButton']).click
-    schulen = @driver.find_elements(:xpath, "/html/body/form/table[4]/tbody/tr/td[2]/input").find do |button|
-      button.attribute('value') == schule['Name']
-    end.click
+    click_element(:xpath, "/html/body/form/table[4]/tbody/tr/td[2]/input", schule['Name'])
     @driver.find_element(:xpath, "/html/body/form/table[5]/tbody/tr/td[2]/input[2]").click
     @driver.find_element(:xpath, "/html/body/form/table[6]/tbody/tr/td[2]/input[1]").click
     click_element(:xpath, "/html/body/form/table[7]/tbody/tr/td[2]/select", student['MNr'] + ' ' + student['Vorname'] + ' ' + student['Name'])
@@ -25,9 +23,7 @@ class AutotoolDirektor < AutotoolAccount
     existiert = existiertDirektor?(student['SNr'], schule['UNr'])
     assert(existiert, @fehler['keinDirektor'])
     @driver.find_element(:id, @ui['administratorButton']).click
-    schulen = @driver.find_elements(:xpath, "/html/body/form/table[4]/tbody/tr/td[2]/input").find do |button|
-      button.attribute('value') == schule['Name']
-    end.click
+    click_element(:xpath, "/html/body/form/table[4]/tbody/tr/td[2]/input", schule['Name'])
     @driver.find_element(:xpath, "/html/body/form/table[5]/tbody/tr/td[2]/input[2]").click
     @driver.find_element(:xpath, "/html/body/form/table[6]/tbody/tr/td[2]/input[2]").click
     click_element(:xpath, "/html/body/form/table[7]/tbody/tr/td[2]/select", student['MNr'] + ' ' + student['Vorname'] + ' ' + student['Name'])

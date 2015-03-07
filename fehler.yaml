@@ -20,3 +20,5 @@ nachSemester: Semester wurde nicht angelegt
 nichtBearbeitetSemester: Semester wurde nicht bearbeitet
 vorTutor: Tutor existiert bereits
 nachTutor: Tutor wurde nicht angelegt
+vorTutor: Vorlesung existiert bereits
+nachTutor: Vorlesung wurde nicht angelegt

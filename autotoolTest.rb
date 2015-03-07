@@ -26,6 +26,25 @@ class AutotoolTest < MiniTest::Test
     "TEST" + zufallsWort(8)
   end
 
+  def mitVorlesung(enr, unr, funktion)
+    name = testWort
+    motd = testWort
+    semesterAnlegen(enr, name, unr, motd)
+    vorlesung = getVorlesung(enr, name, unr, motd)
+    funktion.call(vorlesung)
+  ensure
+    vorlesungEntfernen(enr, name, unr, motd)
+  end
+
+  def mitSemester(unr, funktion)
+    name = testWort
+    semesterAnlegen(unr, name)
+    semester = getSemester(unr, name)
+    funktion.call(semester)
+  ensure
+    semesterEntfernen(unr, name)
+  end
+
   def mitSchuleAccount(funktion)
     mitSchule(->(name) {
       schule = getSchule(name)
@@ -110,6 +129,33 @@ class AutotoolTest < MiniTest::Test
     administratoren.num_rows > 0
   end
 
+  def vorlesungAnlegen(enr, name, unr, motd)
+    existiert = existiertVorlesung?(enr, name, unr, motd)
+    assert(!existiert, @fehler['vorVorlesung'])
+    anfang = Time.now
+    ende = Time.now + (60 * 60 * 24 * 31)
+    @db.query 'INSERT INTO vorlesung (ENr, Name, EinschreibVon, EinschreibBis, unr, motd) VALUES (' + enr + ', \'' + name + '\', \'' + anfang.strftime('%Y-%m-%d %H:%M:%S') + '\', \'' + ende.strftime('%Y-%m-%d %H:%M:%S') + '\', ' + unr + ', \'' + motd + '\')'
+    angelegt = existiertVorlesung?(enr, name, unr, motd)
+    assert(angelegt, @fehler['nachVorlesung'])
+    angelegt
+  end
+
+  def getVorlesung(enr, name, unr, motd)
+    vorlesungen = @db.query 'SELECT * FROM vorlesung WHERE UNr = ' + enr + ' AND Name = \'' + name + '\'' + unr + ' AND Name = \'' + motd + '\''
+    vorlesungen.each_hash do |vorlesung|
+      return vorlesung
+    end
+  end
+
+  def existiertVorlesung?(enr, name, unr, motd)
+    vorlesungen = @db.query 'SELECT * FROM vorlesung WHERE UNr = ' + enr + ' AND Name = \'' + name + '\'' + unr + ' AND Name = \'' + motd + '\''
+    vorlesungen.num_rows > 0
+  end
+
+  def vorlesungenEntfernen(enr, name, unr, motd)
+    vorlesungen = @db.query 'DELETE FROM vorlesung WHERE UNr = ' + enr + ' AND Name = \'' + name + '\'' + unr + ' AND Name = \'' + motd + '\''
+  end
+
   def semesterAnlegen(unr, name)
     existiert = existiertSemester?(unr, name)
     assert(!existiert, @fehler['vorSemester'])
@@ -129,8 +175,8 @@ class AutotoolTest < MiniTest::Test
   end
 
   def existiertSemester?(unr, name)
-    schulen = @db.query 'SELECT * FROM semester WHERE UNr = ' + unr + ' AND Name = \'' + name + '\''
-    schulen.num_rows > 0
+    semesters = @db.query 'SELECT * FROM semester WHERE UNr = ' + unr + ' AND Name = \'' + name + '\''
+    semesters.num_rows > 0
   end
 
   def semesterEntfernen(unr, name)
