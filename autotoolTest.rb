@@ -29,7 +29,7 @@ class AutotoolTest < MiniTest::Test
   def mitVorlesung(enr, unr, funktion)
     name = testWort
     motd = testWort
-    semesterAnlegen(enr, name, unr, motd)
+    vorlesungAnlegen(enr, name, unr, motd)
     vorlesung = getVorlesung(enr, name, unr, motd)
     funktion.call(vorlesung)
   ensure
@@ -141,19 +141,19 @@ class AutotoolTest < MiniTest::Test
   end
 
   def getVorlesung(enr, name, unr, motd)
-    vorlesungen = @db.query 'SELECT * FROM vorlesung WHERE UNr = ' + enr + ' AND Name = \'' + name + '\'' + unr + ' AND Name = \'' + motd + '\''
+    vorlesungen = @db.query 'SELECT * FROM vorlesung WHERE ENr = ' + enr + ' AND Name = \'' + name + '\' AND unr = ' + unr + ' AND motd = \'' + motd + '\''
     vorlesungen.each_hash do |vorlesung|
       return vorlesung
     end
   end
 
   def existiertVorlesung?(enr, name, unr, motd)
-    vorlesungen = @db.query 'SELECT * FROM vorlesung WHERE UNr = ' + enr + ' AND Name = \'' + name + '\'' + unr + ' AND Name = \'' + motd + '\''
+    vorlesungen = @db.query 'SELECT * FROM vorlesung WHERE ENr = ' + enr + ' AND Name = \'' + name + '\' AND unr = ' + unr + ' AND motd = \'' + motd + '\''
     vorlesungen.num_rows > 0
   end
 
-  def vorlesungenEntfernen(enr, name, unr, motd)
-    vorlesungen = @db.query 'DELETE FROM vorlesung WHERE UNr = ' + enr + ' AND Name = \'' + name + '\'' + unr + ' AND Name = \'' + motd + '\''
+  def vorlesungEntfernen(enr, name, unr, motd)
+    vorlesungen = @db.query 'DELETE FROM vorlesung WHERE ENr = ' + enr + ' AND Name = \'' + name + '\' AND unr = ' + unr + ' AND motd = \'' + motd + '\''
   end
 
   def semesterAnlegen(unr, name)
