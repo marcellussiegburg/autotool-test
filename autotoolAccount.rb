@@ -1,6 +1,13 @@
 require_relative 'autotoolTest'
 
 class AutotoolAccount < AutotoolTest
+  def ensureTutor(schule, vorlesung, student, funktion)
+    tutor = tutorAnlegen(student['SNr'], vorlesung['VNr'])
+    ensureEingeloggt(schule['Name'], student['MNr'], funktion)
+  ensure
+    tutorEntfernen(student['SNr'], vorlesung['VNr']) unless !tutor
+  end
+
   def ensureDirektor(schule, student, funktion)
     direktor = direktorAnlegen(student['SNr'], schule['UNr'])
     ensureEingeloggt(schule['Name'], student['MNr'], funktion)

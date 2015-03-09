@@ -31,6 +31,20 @@ class AutotoolVorlesungTest < AutotoolVorlesung
     })
   end
 
+  def test_vorlesungBearbeitenTutor
+    name = testWort
+    motd = testWort
+    mitSchuleAccount(->(schule, student) {
+      mitSemester(schule['UNr'], ->(semester) {
+        mitVorlesung(semester['ENr'], schule['UNr'], ->(vorlesung) {
+          ensureTutor(schule, vorlesung, student, ->() {
+            vorlesungBearbeitenTutorGui(vorlesung, semester, schule, name, motd)
+          })
+        })
+      })
+    })
+  end
+
   def test_vorlesungEntfernen
     name = testWort
     motd = testWort

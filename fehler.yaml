@@ -18,8 +18,10 @@ keinSemester: Semester existiert nicht
 vorSemester: Semester existiert bereits
 nachSemester: Semester wurde nicht angelegt
 nichtBearbeitetSemester: Semester wurde nicht bearbeitet
+keinTutor: Tutor existiert nicht
 vorTutor: Tutor existiert bereits
 nachTutor: Tutor wurde nicht angelegt
+nochTutor: Tutor existiert noch
 keineVorlesung: Vorlesung existiert nicht
 vorVorlesung: Vorlesung existiert bereits
 nachVorlesung: Vorlesung wurde nicht angelegt
