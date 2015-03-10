@@ -113,11 +113,9 @@ class AutotoolVorlesung < AutotoolAccount
     vorlesungEntfernen(semester['ENr'], name, schule['UNr'], motd) unless !existiertNeu2
   end
 
-  def vorlesungEntfernenGui(vorlesung, semester, schule, name, motd)
+  def vorlesungEntfernenGui(vorlesung, semester, schule)
     existiert = existiertVorlesung?(vorlesung['ENr'], vorlesung['Name'], vorlesung['unr'], vorlesung['motd'])
     assert(existiert, @fehler['keineVorlesung'])
-    existiertNeu = existiertVorlesung?(semester['ENr'], name, schule['UNr'], motd)
-    assert(!existiertNeu, @fehler['vorVorlesung'])
     @driver.find_element(:xpath, "/html/body/form/table[3]/tbody/tr/td[2]/input[2]").click
     click_element(:xpath, "/html/body/form/table[4]/tbody/tr/td[2]/input", schule['Name'])
     @driver.find_element(:xpath, "/html/body/form/table[5]/tbody/tr/td[2]/input[2]").click

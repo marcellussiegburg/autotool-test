@@ -8,11 +8,11 @@ class AutotoolVorlesungTest < AutotoolVorlesung
     name = testWort
     motd = testWort
     vorlesungAnlegen = ->(schule, student) {
-      mitSemester(schule['UNr'], ->(semester) {
-        ensureDirektor(schule, student, ->() {
+      mitSemester schule['UNr'], ->(semester) {
+        ensureDirektor schule, student, ->() {
           vorlesungAnlegenGui(semester, schule, name, motd)
-        })
-      })
+        }
+      }
     }
     mitSchuleAccount(vorlesungAnlegen)
   end
@@ -20,42 +20,40 @@ class AutotoolVorlesungTest < AutotoolVorlesung
   def test_vorlesungBearbeiten
     name = testWort
     motd = testWort
-    mitSchuleAccount(->(schule, student) {
-      mitSemester(schule['UNr'], ->(semester) {
-        mitVorlesung(semester['ENr'], schule['UNr'], ->(vorlesung) {
-          ensureDirektor(schule, student, ->() {
+    mitSchuleAccount ->(schule, student) {
+      mitSemester schule['UNr'], ->(semester) {
+        mitVorlesung semester['ENr'], schule['UNr'], ->(vorlesung) {
+          ensureDirektor schule, student, ->() {
             vorlesungBearbeitenGui(vorlesung, semester, schule, name, motd)
-          })
-        })
-      })
-    })
+          }
+        }
+      }
+    }
   end
 
   def test_vorlesungBearbeitenTutor
     name = testWort
     motd = testWort
-    mitSchuleAccount(->(schule, student) {
-      mitSemester(schule['UNr'], ->(semester) {
-        mitVorlesung(semester['ENr'], schule['UNr'], ->(vorlesung) {
-          ensureTutor(schule, vorlesung, student, ->() {
+    mitSchuleAccount ->(schule, student) {
+      mitSemester schule['UNr'], ->(semester) {
+        mitVorlesung semester['ENr'], schule['UNr'], ->(vorlesung) {
+          ensureTutor schule, vorlesung, student, ->() {
             vorlesungBearbeitenTutorGui(vorlesung, semester, schule, name, motd)
-          })
-        })
-      })
-    })
+          }
+        }
+      }
+    }
   end
 
   def test_vorlesungEntfernen
-    name = testWort
-    motd = testWort
-    mitSchuleAccount(->(schule, student) {
-      mitSemester(schule['UNr'], ->(semester) {
-        mitVorlesung(semester['ENr'], schule['UNr'], ->(vorlesung) {
-          ensureDirektor(schule, student, ->() {
-            vorlesungEntfernenGui(vorlesung, semester, schule, name, motd)
-          })
-        })
-      })
-    })
+    mitSchuleAccount ->(schule, student) {
+      mitSemester schule['UNr'], ->(semester) {
+        mitVorlesung semester['ENr'], schule['UNr'], ->(vorlesung) {
+          ensureDirektor schule, student, ->() {
+            vorlesungEntfernenGui(vorlesung, semester, schule)
+          }
+        }
+      }
+    }
   end
 end

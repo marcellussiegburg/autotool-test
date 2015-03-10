@@ -6,6 +6,11 @@ keinDirektor: Direktor existiert nicht
 vorDirektor: Direktor existiert bereits
 nachDirektor: Direktor wurde nicht angelegt
 nochDirektor: Direktor existiert noch
+keineGruppe: Gruppe existiert nicht
+vorGruppe: Gruppe existiert bereits
+nachGruppe: Gruppe wurde nicht angelegt
+nochGruppe: Gruppe existiert noch
+nichtBearbeitetGruppe: Gruppe wurde nicht bearbeitet
 vorLogin: Bereits eingeloggt
 nachLogin: Einloggen fehlgeschlagen
 vorLogout: Nicht eingeloggt

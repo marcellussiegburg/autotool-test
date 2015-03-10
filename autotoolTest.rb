@@ -26,6 +26,17 @@ class AutotoolTest < MiniTest::Test
     "TEST" + zufallsWort(8)
   end
 
+  def mitGruppe(vnr, funktion)
+    name = testWort
+    referent = testWort
+    maxStudenten = (5 + rand(50)).to_s
+    gruppeAnlegen(vnr, name, maxStudenten, referent)
+    gruppe = getGruppe(vnr, name, maxStudenten, referent)
+    funktion.call(gruppe)
+  ensure
+    gruppeEntfernen(vnr, name, maxStudenten, referent)
+  end
+
   def mitVorlesung(enr, unr, funktion)
     name = testWort
     motd = testWort
@@ -127,6 +138,31 @@ class AutotoolTest < MiniTest::Test
   def existiertAdmin?(snr)
     administratoren = @db.query 'SELECT * FROM minister WHERE SNr = ' + snr
     administratoren.num_rows > 0
+  end
+
+  def gruppeAnlegen(vnr, name, maxStudenten, referent)
+    existiert = existiertGruppe?(vnr, name, maxStudenten, referent)
+    assert(!existiert, @fehler['vorGruppe'])
+    @db.query 'INSERT INTO gruppe (VNr, Name, MaxStudents, Referent) VALUES (' + vnr + ', \'' + name + '\', ' + maxStudenten + ', \'' + referent + '\')'
+    angelegt = existiertGruppe?(vnr, name, maxStudenten, referent)
+    assert(angelegt, @fehler['nachGruppe'])
+    angelegt
+  end
+
+  def getGruppe(vnr, name, maxStudenten, referent)
+    gruppen = @db.query 'SELECT * FROM gruppe WHERE VNr = ' + vnr + ' AND Name = \'' + name + '\' AND MaxStudents = ' + maxStudenten + ' AND referent = \'' + referent + '\''
+    gruppen.each_hash do |gruppe|
+      return gruppe
+    end
+  end
+
+  def existiertGruppe?(vnr, name, maxStudenten, referent)
+    gruppen = @db.query 'SELECT * FROM gruppe WHERE VNr = ' + vnr + ' AND Name = \'' + name + '\' AND MaxStudents = ' + maxStudenten + ' AND referent = \'' + referent + '\''
+    gruppen.num_rows > 0
+  end
+
+  def gruppeEntfernen(vnr, name, maxStudenten, referent)
+    gruppen = @db.query 'DELETE FROM gruppe WHERE VNr = ' + vnr + ' AND Name = \'' + name + '\' AND MaxStudents = ' + maxStudenten + ' AND referent = \'' + referent + '\''
   end
 
   def vorlesungAnlegen(enr, name, unr, motd)
