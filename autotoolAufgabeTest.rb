@@ -1,34 +1,30 @@
 require 'rubygems'
-require_relative 'autotoolGruppe'
+require_relative 'autotoolAufgabe'
 
-class AutotoolGruppeTest < AutotoolGruppe
-  parallelize_me!()
-
-  def test_gruppeAnlegen
+class AutotoolAufgabeTest < AutotoolAufgabe
+  def test_aufgabeAnlegen
     name = testWort
-    referent = testWort
-    maxStudenten = (5 + rand(50)).to_s
+    hinweis = testWort
     mitSchuleAccount ->(schule, student) {
       mitSemester schule['UNr'], ->(semester) {
         mitVorlesung semester['ENr'], schule['UNr'], ->(vorlesung) {
           ensureTutor schule, vorlesung, student, ->() {
-            gruppeAnlegenGui(vorlesung, semester, name, maxStudenten, referent)
+            aufgabeAnlegenGui(vorlesung, semester, name, hinweis)
           }
         }
       }
     }
   end
 
-  def test_gruppeBearbeiten
+  def test_aufgabeBearbeiten
     name = testWort
-    referent = testWort
-    maxStudenten = (5 + rand(50)).to_s
+    hinweis = testWort
     mitSchuleAccount ->(schule, student) {
       mitSemester schule['UNr'], ->(semester) {
         mitVorlesung semester['ENr'], schule['UNr'], ->(vorlesung) {
-          mitGruppe vorlesung['VNr'], ->(gruppe) {
+          mitAufgabe vorlesung['VNr'], ->(aufgabe) {
             ensureTutor schule, vorlesung, student, ->() {
-              gruppeBearbeitenGui(gruppe, vorlesung, semester, name, maxStudenten, referent)
+              aufgabeBearbeitenGui(aufgabe, vorlesung, semester, name, hinweis)
             }
           }
         }
@@ -36,13 +32,13 @@ class AutotoolGruppeTest < AutotoolGruppe
     }
   end
 
-  def test_gruppeEntfernen
+  def test_aufgabeEntfernen
     mitSchuleAccount ->(schule, student) {
       mitSemester schule['UNr'], ->(semester) {
         mitVorlesung semester['ENr'], schule['UNr'], ->(vorlesung) {
-          mitGruppe vorlesung['VNr'], ->(gruppe) {
+          mitAufgabe vorlesung['VNr'], ->(aufgabe) {
             ensureTutor schule, vorlesung, student, ->() {
-              gruppeEntfernenGui(gruppe, vorlesung, semester)
+              aufgabeEntfernenGui(aufgabe, vorlesung, semester)
             }
           }
         }

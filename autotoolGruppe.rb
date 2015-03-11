@@ -2,7 +2,7 @@
 require_relative 'autotoolAccount'
 
 class AutotoolGruppe < AutotoolAccount
-  def gruppeAnlegenGui(vorlesung, semester, schule, name, maxStudenten, referent)
+  def gruppeAnlegenGui(vorlesung, semester, name, maxStudenten, referent)
     existiert = existiertGruppe?(vorlesung['VNr'], name, maxStudenten, referent)
     assert(!existiert, @fehler['vorGruppe'])
     click_element(:xpath, "/html/body/form/table[3]/tbody/tr[1]/td[2]/input", semester['Name'])
@@ -24,7 +24,7 @@ class AutotoolGruppe < AutotoolAccount
     gruppeEntfernen(vorlesung['VNr'], name, maxStudenten, referent) unless !angelegt
   end
 
-  def gruppeBearbeitenGui(gruppe, vorlesung, semester, schule, name, maxStudenten, referent)
+  def gruppeBearbeitenGui(gruppe, vorlesung, semester, name, maxStudenten, referent)
     existiert = existiertGruppe?(gruppe['VNr'], gruppe['Name'], gruppe['MaxStudents'], gruppe['Referent'])
     assert(existiert, @fehler['keineGruppe'])
     existiertNeu = existiertGruppe?(vorlesung['VNr'], name, maxStudenten, referent)
@@ -49,7 +49,7 @@ class AutotoolGruppe < AutotoolAccount
     gruppeEntfernen(vorlesung['VNr'], name, maxStudenten, referent) unless !existiertNeu2
   end
 
-  def gruppeEntfernenGui(gruppe, vorlesung, semester, schule)
+  def gruppeEntfernenGui(gruppe, vorlesung, semester)
     existiert = existiertGruppe?(gruppe['VNr'], gruppe['Name'], gruppe['MaxStudents'], gruppe['Referent'])
     assert(existiert, @fehler['keineGruppe'])
     click_element(:xpath, "/html/body/form/table[3]/tbody/tr[1]/td[2]/input", semester['Name'])

@@ -26,6 +26,16 @@ class AutotoolTest < MiniTest::Test
     "TEST" + zufallsWort(8)
   end
 
+  def mitAufgabe(vnr, funktion)
+    name = testWort
+    hinweis = testWort
+    aufgabeAnlegen(vnr, name, hinweis)
+    aufgabe = getAufgabe(vnr, name, hinweis)
+    funktion.call(aufgabe)
+  ensure
+    aufgabeEntfernen(vnr, name, hinweis)
+  end
+
   def mitGruppe(vnr, funktion)
     name = testWort
     referent = testWort
@@ -138,6 +148,43 @@ class AutotoolTest < MiniTest::Test
   def existiertAdmin?(snr)
     administratoren = @db.query 'SELECT * FROM minister WHERE SNr = ' + snr
     administratoren.num_rows > 0
+  end
+
+  def aufgabeAnlegen(vnr, name, hinweis)
+    existiert = existiertAufgabe?(vnr, name, hinweis)
+    assert(!existiert, @fehler['vorAufgabe'])
+    server = "http://kernkraft.imn.htwk-leipzig.de/cgi-bin/autotool-latest.cgi"
+    typ = "Reconstruct-Direct"
+    highscore = "High"
+    status = "Demo"
+    anfang = Time.now
+    ende = Time.now + (60 * 60 * 24 * 31)
+    config = "[ ( Pre
+  , [ e , j , b , i , f , m , l
+    , k , d , g , c , a , h ] )
+, ( In
+  , [ b , j , i , e , k , l , d
+    , m , g , f , a , c , h ] ) ]"
+    @db.query 'INSERT INTO aufgabe (VNr, Name, Von, Bis, server, Typ, Highscore, Status, Config, Remark) VALUES (' + vnr + ', \'' + name + '\', \'' + anfang.strftime('%Y-%m-%d %H:%M:%S') + '\', \'' + ende.strftime('%Y-%m-%d %H:%M:%S') + '\', \'' + server + '\', \'' + typ + '\', \'' + highscore + '\', \'' + status + '\', \'' + config + '\', \'' + hinweis + '\')'
+    angelegt = existiertAufgabe?(vnr, name, hinweis)
+    assert(angelegt, @fehler['nachAufgabe'])
+    angelegt
+  end
+
+  def getAufgabe(vnr, name, hinweis)
+    aufgaben = @db.query 'SELECT * FROM aufgabe WHERE VNr = ' + vnr + ' AND Name = \'' + name + '\' AND Remark = \'' + hinweis + '\''
+    aufgaben.each_hash do |aufgabe|
+      return aufgabe
+    end
+  end
+
+  def existiertAufgabe?(vnr, name, hinweis)
+    aufgaben = @db.query 'SELECT * FROM aufgabe WHERE VNr = ' + vnr + ' AND Name = \'' + name + '\' AND Remark = \'' + hinweis + '\''
+    aufgaben.num_rows > 0
+  end
+
+  def aufgabeEntfernen(vnr, name, hinweis)
+    aufgaben = @db.query 'DELETE FROM aufgabe WHERE VNr = ' + vnr + ' AND Name = \'' + name + '\' AND Remark = \'' + hinweis + '\''
   end
 
   def gruppeAnlegen(vnr, name, maxStudenten, referent)

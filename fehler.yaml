@@ -2,6 +2,11 @@ vorAccount: Account existiert bereits
 nachAccount: Account wurde nicht angelegt
 vorAdmin: Admin existiert bereits
 nachAdmin: Admin wurde nicht angelegt
+keineAufgabe: Aufgabe existiert nicht
+vorAufgabe: Aufgabe existiert bereits
+nachAufgabe: Aufgabe wurde nicht angelegt
+nochAufgabe: Aufgabe existiert noch
+nichtBearbeitetAufgabe: Aufgabe wurde nicht bearbeitet
 keinDirektor: Direktor existiert nicht
 vorDirektor: Direktor existiert bereits
 nachDirektor: Direktor wurde nicht angelegt
