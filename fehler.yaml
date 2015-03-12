@@ -11,6 +11,10 @@ keinDirektor: Direktor existiert nicht
 vorDirektor: Direktor existiert bereits
 nachDirektor: Direktor wurde nicht angelegt
 nochDirektor: Direktor existiert noch
+keinEinschreibung: Einschreibung existiert nicht
+vorEinschreibung: Einschreibung existiert bereits
+nachEinschreibung: Einschreibung wurde nicht angelegt
+nochEinschreibung: Einschreibung existiert noch
 keineGruppe: Gruppe existiert nicht
 vorGruppe: Gruppe existiert bereits
 nachGruppe: Gruppe wurde nicht angelegt

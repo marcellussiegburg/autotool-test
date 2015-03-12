@@ -26,6 +26,13 @@ class AutotoolTest < MiniTest::Test
     "TEST" + zufallsWort(8)
   end
 
+  def mitEinschreibung(snr, gnr, funktion)
+    einschreibungAnlegen(snr, gnr)
+    funktion.call()
+  ensure
+    einschreibungEntfernen(snr, gnr)
+  end
+
   def mitAufgabe(vnr, funktion)
     name = testWort
     hinweis = testWort
@@ -94,6 +101,24 @@ class AutotoolTest < MiniTest::Test
     funktion.call(name)
   ensure
     schuleEntfernen(name) unless !angelegt
+  end
+
+  def einschreibungAnlegen(snr, gnr)
+    existiert = existiertEinschreibung?(snr, gnr)
+    assert(!existiert, @fehler['vorEinschreibung'])
+    @db.query 'INSERT INTO stud_grp (SNr, GNr) VALUES (' + snr + ',' + gnr + ')'
+    angelegt = existiertEinschreibung?(snr, gnr)
+    assert(angelegt, @fehler['nachEinschreibung'])
+    angelegt
+  end
+
+  def einschreibungEntfernen(snr, gnr)
+    einschreibungen = @db.query 'DELETE FROM stud_grp WHERE SNr = ' + snr + ' AND GNr = ' + gnr
+  end
+
+  def existiertEinschreibung?(snr, gnr)
+    einschreibungen = @db.query 'SELECT * FROM stud_grp WHERE SNr = ' + snr + ' AND GNr = ' + gnr
+    einschreibungen.num_rows > 0
   end
 
   def tutorAnlegen(snr, vnr)
@@ -326,7 +351,7 @@ class AutotoolTest < MiniTest::Test
 
   def click_element(how, what, option)
     @driver.find_elements(how, what).find do |button|
-       button.attribute('value') == option
+      button.attribute('value') == option
     end.click
   end
 
