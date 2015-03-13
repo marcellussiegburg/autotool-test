@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 require 'rubygems'
 gem 'minitest'
+require 'fileutils'
 require 'minitest/autorun'
 require 'selenium-webdriver'
 require 'mysql'
@@ -24,6 +25,16 @@ class AutotoolTest < MiniTest::Test
 
   def testWort
     "TEST" + zufallsWort(8)
+  end
+
+  def mitEinsendung(student, vnr, anr, funktion)
+    oks = rand(1000) + 1
+    nos = rand(1000)
+    einsendungAnlegen(student, vnr, anr, oks.to_s, nos.to_s)
+    einsendung = getEinsendung(student['SNr'], anr, oks.to_s, nos.to_s)
+    funktion.call(einsendung)
+  ensure
+    einsendungEntfernen(student, vnr, anr, oks.to_s, nos.to_s)
   end
 
   def mitEinschreibung(snr, gnr, funktion)
@@ -175,6 +186,12 @@ class AutotoolTest < MiniTest::Test
     administratoren.num_rows > 0
   end
 
+  def aufgabeAlsAbgelaufen(aufgabe)
+    anfang = Time.now - (60 * 60 * 24 * 31)
+    ende = Time.now - 1
+    @db.query 'UPDATE aufgabe SET Von = \'' + anfang.strftime('%Y-%m-%d %H:%M:%S') + '\', Bis = \'' + ende.strftime('%Y-%m-%d %H:%M:%S') + '\' WHERE ANr = ' + aufgabe['ANr']
+  end
+
   def aufgabeAnlegen(vnr, name, hinweis)
     existiert = existiertAufgabe?(vnr, name, hinweis)
     assert(!existiert, @fehler['vorAufgabe'])
@@ -210,6 +227,46 @@ class AutotoolTest < MiniTest::Test
 
   def aufgabeEntfernen(vnr, name, hinweis)
     aufgaben = @db.query 'DELETE FROM aufgabe WHERE VNr = ' + vnr + ' AND Name = \'' + name + '\' AND Remark = \'' + hinweis + '\''
+  end
+
+  def einsendungAnlegen(student, vnr, anr, oks, nos)
+    pfad = '/space/autotool/done/' + vnr + '/' + anr + '/' + student['MNr'] + '/OK'
+    unless File.directory?(pfad)
+      FileUtils.mkdir_p(pfad, :mode => 0777)
+    end
+    input = pfad + '/latest.input'
+    report = pfad + '/latest.report'
+    instant = pfad + '/latest.instant'
+    FileUtils.cp('latest.input', input)
+    FileUtils.cp('latest.report', report)
+    FileUtils.cp('latest.instant', instant)
+    FileUtils.chmod(0777, input)
+    FileUtils.chmod(0777, report)
+    FileUtils.chmod(0777, instant)
+    existiert = existiertEinsendung?(student['SNr'], anr, oks, nos)
+    assert(!existiert, @fehler['vorEinsendung'])
+    @db.query 'INSERT INTO stud_aufg (SNr, ANr, Ok, No, Input, Report, Instant) VALUES (' + student['SNr'] + ', ' + anr + ', ' + oks + ', ' + nos + ', \'' + input + '\', \'' + report + '\', \'' + instant + '\')'
+    angelegt = existiertEinsendung?(student['SNr'], anr, oks, nos)
+    assert(angelegt, @fehler['nachEinsendung'])
+    angelegt
+  end
+
+  def getEinsendung(snr, anr, oks, nos)
+    einsendungen = @db.query 'SELECT * FROM stud_aufg WHERE SNr = ' + snr + ' AND ANr = ' + anr + ' AND Ok = ' + oks + ' AND No = ' + nos
+    einsendungen.each_hash do |einsendung|
+      return einsendung
+    end
+  end
+
+  def existiertEinsendung?(snr, anr, oks, nos)
+    einsendungen = @db.query 'SELECT * FROM stud_aufg WHERE SNr = ' + snr + ' AND ANr = ' + anr + ' AND Ok = ' + oks + ' AND No = ' + nos
+    einsendungen.num_rows > 0
+  end
+
+  def einsendungEntfernen(student, vnr, anr, oks, nos)
+    pfad = '/space/autotool/done/' + vnr
+    einsendungen = @db.query 'DELETE FROM stud_aufg WHERE SNr = ' + student['SNr'] + ' AND ANr = ' + anr + ' AND Ok = ' + oks + ' AND No = ' + nos
+    FileUtils.rm_r pfad, :force => true
   end
 
   def gruppeAnlegen(vnr, name, maxStudenten, referent)

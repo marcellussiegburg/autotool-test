@@ -15,6 +15,11 @@ keinEinschreibung: Einschreibung existiert nicht
 vorEinschreibung: Einschreibung existiert bereits
 nachEinschreibung: Einschreibung wurde nicht angelegt
 nochEinschreibung: Einschreibung existiert noch
+keinEinsendung: Einsendung existiert nicht
+vorEinsendung: Einsendung existiert bereits
+nachEinsendung: Einsendung wurde nicht angelegt
+nichtEinsendung: Bewertung der Einsendung wird nicht angezeigt
+keinTestEinsendung: Einsendung wurde angelegt, d.h. das ist kein Test
 keineGruppe: Gruppe existiert nicht
 vorGruppe: Gruppe existiert bereits
 nachGruppe: Gruppe wurde nicht angelegt

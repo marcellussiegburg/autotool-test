@@ -1,0 +1,7 @@
+<pre>Gesucht ist ein binärer Baum t mit den Knoten-Reihenfolgen:
+    Preorder (t) = [ e , j , b
+                   , i , f , m , l , k , d , g , c
+                   , a , h ]
+    Inorder (t) = [ b , j , i , e
+                  , k , l , d , m , g , f , a , c
+                  , h ]</pre>
