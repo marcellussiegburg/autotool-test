@@ -27,14 +27,41 @@ class AutotoolTest < MiniTest::Test
     "TEST" + zufallsWort(8)
   end
 
+  def mitCache(vnr, anr, mnr, funktion)
+    cacheAnlegen(vnr, anr, mnr)
+    funktion.call()
+  ensure
+    cacheEntfernen(vnr)
+  end
+
+  def mitEinsendungen(studenten, vnr, anrs, funktion)
+    if studenten.size == 1 and anrs.size == 1 then
+      mitEinsendung studenten.shift, vnr, anrs.shift, ->(einsendung) {
+        funktion.call()
+      }
+    elsif studenten.size > 1 then
+      mitEinsendungen([studenten.shift], vnr, anrs, ->() {mitEinsendungen(studenten, vnr, anrs, funktion)})
+    elsif anrs.size > 1 then
+      mitEinsendungen(studenten, vnr, [anrs.shift], ->() {mitEinsendungen(studenten, vnr, anrs, funktion)})
+    else
+      funktion.call()
+    end
+  end
+
   def mitEinsendung(student, vnr, anr, funktion)
-    oks = rand(1000) + 1
-    nos = rand(1000)
-    einsendungAnlegen(student, vnr, anr, oks.to_s, nos.to_s)
-    einsendung = getEinsendung(student['SNr'], anr, oks.to_s, nos.to_s)
+    einsendungAnlegen(student, vnr, anr)
+    einsendung = getEinsendung(student['SNr'], anr)
     funktion.call(einsendung)
   ensure
-    einsendungEntfernen(student, vnr, anr, oks.to_s, nos.to_s)
+    einsendungEntfernen(student, vnr, anr)
+  end
+
+  def mitEinschreibungen(snrs, gnr, funktion)
+    if snrs.size > 0 then
+      mitEinschreibung(snrs.shift, gnr, ->() { mitEinschreibungen(snrs, gnr, funktion) })
+    else
+      funktion.call()
+    end
   end
 
   def mitEinschreibung(snr, gnr, funktion)
@@ -42,6 +69,20 @@ class AutotoolTest < MiniTest::Test
     funktion.call()
   ensure
     einschreibungEntfernen(snr, gnr)
+  end
+
+  def mitAufgaben(x, vnr, funktion)
+    mitAufgabenHelper(x, vnr, [], funktion)
+  end
+
+  def mitAufgabenHelper(x, vnr, aufgaben, funktion)
+    if x > 0 then
+      mitAufgabe vnr, ->(aufgabe) {
+        mitAufgabenHelper(x - 1, vnr, aufgaben + [aufgabe], funktion)
+      }
+    else
+      funktion.call(aufgaben)
+    end
   end
 
   def mitAufgabe(vnr, funktion)
@@ -91,6 +132,20 @@ class AutotoolTest < MiniTest::Test
         funktion.call(schule, student)
       })
     })
+  end
+
+  def mitStudenten(x, unr, funktion)
+    mitStudentenHelper(x, unr, [], funktion)
+  end
+
+  def mitStudentenHelper(x, unr, studenten, funktion)
+    if x > 0 then
+      mitAccount unr, ->(student) {
+        mitStudentenHelper(x - 1, unr, [student] + studenten, funktion)
+      }
+    else
+      funktion.call(studenten)
+    end
   end
 
   def mitAccount(unr, funktion)
@@ -186,6 +241,26 @@ class AutotoolTest < MiniTest::Test
     administratoren.num_rows > 0
   end
 
+  def cacheAnlegen(vnr, anr, mnr)
+    pfad = '/space/autotool/cache/' + vnr + '/' + anr
+    unless File.directory?(pfad)
+      FileUtils.mkdir_p(pfad, :mode => 0777)
+    end
+    datei = pfad + '/' + mnr + '.cache'
+    FileUtils.touch(datei)
+    FileUtils.chmod(0777, datei)
+  end
+
+  def cacheEntfernen(vnr)
+    pfad = '/space/autotool/cache/' + vnr
+    FileUtils.rm_r(pfad, :force => true)
+  end
+
+  def existiertCache?(vnr, anr, mnr)
+    datei = '/space/autotool/cache/' + vnr + '/' + anr + '/' + mnr + '.cache'
+    File.file?(datei)
+  end
+
   def aufgabeAlsAbgelaufen(aufgabe)
     anfang = Time.now - (60 * 60 * 24 * 31)
     ende = Time.now - 1
@@ -229,7 +304,9 @@ class AutotoolTest < MiniTest::Test
     aufgaben = @db.query 'DELETE FROM aufgabe WHERE VNr = ' + vnr + ' AND Name = \'' + name + '\' AND Remark = \'' + hinweis + '\''
   end
 
-  def einsendungAnlegen(student, vnr, anr, oks, nos)
+  def einsendungAnlegen(student, vnr, anr)
+    oks = rand(1000) + 1
+    nos = rand(1000)
     pfad = '/space/autotool/done/' + vnr + '/' + anr + '/' + student['MNr'] + '/OK'
     unless File.directory?(pfad)
       FileUtils.mkdir_p(pfad, :mode => 0777)
@@ -243,29 +320,29 @@ class AutotoolTest < MiniTest::Test
     FileUtils.chmod(0777, input)
     FileUtils.chmod(0777, report)
     FileUtils.chmod(0777, instant)
-    existiert = existiertEinsendung?(student['SNr'], anr, oks, nos)
+    existiert = existiertEinsendung?(student['SNr'], anr)
     assert(!existiert, @fehler['vorEinsendung'])
-    @db.query 'INSERT INTO stud_aufg (SNr, ANr, Ok, No, Input, Report, Instant) VALUES (' + student['SNr'] + ', ' + anr + ', ' + oks + ', ' + nos + ', \'' + input + '\', \'' + report + '\', \'' + instant + '\')'
-    angelegt = existiertEinsendung?(student['SNr'], anr, oks, nos)
+    @db.query 'INSERT INTO stud_aufg (SNr, ANr, Ok, No, Input, Report, Instant) VALUES (' + student['SNr'] + ', ' + anr + ', ' + oks.to_s + ', ' + nos.to_s + ', \'' + input + '\', \'' + report + '\', \'' + instant + '\')'
+    angelegt = existiertEinsendung?(student['SNr'], anr)
     assert(angelegt, @fehler['nachEinsendung'])
     angelegt
   end
 
-  def getEinsendung(snr, anr, oks, nos)
-    einsendungen = @db.query 'SELECT * FROM stud_aufg WHERE SNr = ' + snr + ' AND ANr = ' + anr + ' AND Ok = ' + oks + ' AND No = ' + nos
+  def getEinsendung(snr, anr)
+    einsendungen = @db.query 'SELECT * FROM stud_aufg WHERE SNr = ' + snr + ' AND ANr = ' + anr
     einsendungen.each_hash do |einsendung|
       return einsendung
     end
   end
 
-  def existiertEinsendung?(snr, anr, oks, nos)
-    einsendungen = @db.query 'SELECT * FROM stud_aufg WHERE SNr = ' + snr + ' AND ANr = ' + anr + ' AND Ok = ' + oks + ' AND No = ' + nos
+  def existiertEinsendung?(snr, anr)
+    einsendungen = @db.query 'SELECT * FROM stud_aufg WHERE SNr = ' + snr + ' AND ANr = ' + anr
     einsendungen.num_rows > 0
   end
 
-  def einsendungEntfernen(student, vnr, anr, oks, nos)
+  def einsendungEntfernen(student, vnr, anr)
     pfad = '/space/autotool/done/' + vnr
-    einsendungen = @db.query 'DELETE FROM stud_aufg WHERE SNr = ' + student['SNr'] + ' AND ANr = ' + anr + ' AND Ok = ' + oks + ' AND No = ' + nos
+    einsendungen = @db.query 'DELETE FROM stud_aufg WHERE SNr = ' + student['SNr'] + ' AND ANr = ' + anr
     FileUtils.rm_r pfad, :force => true
   end
 
@@ -398,6 +475,13 @@ class AutotoolTest < MiniTest::Test
     end
   end
 
+  def getStudentNoMail (mnr, vorname, name)
+    studenten = @db.query 'SELECT * FROM student WHERE mnr =\'' + mnr + '\' AND name = \'' + name +  '\' AND vorname = \'' + vorname + '\''
+    studenten.each_hash do |student|
+      return student
+    end
+  end
+
   def accountEntfernen (mnr, vorname, name, email)
     rs = @db.query 'DELETE FROM student WHERE mnr =\'' + mnr + '\' AND name = \'' + name +  '\' AND vorname = \'' + vorname + '\' AND email = \'' + email + '\''
   end
@@ -434,6 +518,13 @@ class AutotoolTest < MiniTest::Test
       "10" => "Oktober",
       "11" => "November",
       "12" => "Dezember"}
+  end
+
+  def readFile(datei)
+    file = File.open(datei, "r")
+    inhalt = file.read
+    file.close
+    inhalt
   end
 
   def teardown
