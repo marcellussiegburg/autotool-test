@@ -15,17 +15,19 @@ class AutotoolAccountTest < AutotoolAccount
   end
 
   def test_login
-    login = ->(schule, student) {
-      login(schule['Name'], student[:MNr])
+    mitSchuleAccount ->(schule, student) {
+      mitSemester schule['UNr'], ->(semester) {
+        login(schule['Name'], student['MNr'])
+      }
     }
-    mitSchuleAccount(login)
   end
 
   def test_logout
-    logout = ->(schule, student) {
-      login(schule['Name'], student[:MNr])
-      logout()
+    mitSchuleAccount ->(schule, student) {
+      mitSemester schule['UNr'], ->(semester) {
+        login(schule['Name'], student['MNr'])
+        logout()
+      }
     }
-    mitSchuleAccount(logout)
   end
 end

@@ -32,7 +32,7 @@ class AutotoolSchule < AutotoolAccount
     @driver.find_element(:xpath, "/html/body/form/table[6]/tbody/tr[2]/td[2]/input").clear
     @driver.find_element(:xpath, "/html/body/form/table[6]/tbody/tr[2]/td[2]/input").send_keys suffix
     @driver.find_elements(:xpath, "/html/body/form/input[@type='submit']")[2].click
-    existertNeu2 = existiertSchule?(name)
+    existiertNeu2 = existiertSchule?(name)
     assert(existiertNeu2, @fehler['keineSchule'])
     assert_equal(schule['UNr'], getSchule(name)['UNr'], @fehler['nichtBearbeitetSchule'])
   end
