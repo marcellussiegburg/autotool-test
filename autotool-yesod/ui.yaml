@@ -1,0 +1,13 @@
+accountAnlegenButton: C5
+accountAnlegenEmail: F10
+accountAnlegenMNr: F7
+accountAnlegenName: F9
+accountAnlegenSubmit1: C11
+accountAnlegenSubmit2: C12
+accountAnlegenVorname: F8
+loginButton: C4
+loginMNr: F7
+loginPasswort: F8
+loginSubmit: C9
+administratorButton: C13
+schuleAnlegenButton: C15
