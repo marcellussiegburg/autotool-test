@@ -9,9 +9,9 @@ require 'yaml'
 
 class AutotoolTest < MiniTest::Test
   def setup
-    @config = YAML.load_file 'config.yaml'
+    @config = YAML.load_file '../config.yaml'
     @ui = YAML.load_file 'ui.yaml'
-    @fehler = YAML.load_file 'fehler.yaml'
+    @fehler = YAML.load_file '../fehler.yaml'
     @base_url = @config['url']
     sleep(5)
     @driver = Selenium::WebDriver.for(:firefox)
@@ -314,9 +314,9 @@ class AutotoolTest < MiniTest::Test
     input = pfad + '/latest.input'
     report = pfad + '/latest.report'
     instant = pfad + '/latest.instant'
-    FileUtils.cp('latest.input', input)
-    FileUtils.cp('latest.report', report)
-    FileUtils.cp('latest.instant', instant)
+    FileUtils.cp('../latest.input', input)
+    FileUtils.cp('../latest.report', report)
+    FileUtils.cp('../latest.instant', instant)
     FileUtils.chmod(0777, input)
     FileUtils.chmod(0777, report)
     FileUtils.chmod(0777, instant)

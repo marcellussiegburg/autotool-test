@@ -5,3 +5,4 @@ dbUser: user
 email: foo@localhost
 schule: school
 url: http://localhost
+url-yesod: http://localhost:3000

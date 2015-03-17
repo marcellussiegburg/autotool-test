@@ -1,4 +1,4 @@
-require_relative 'autotoolTest'
+require_relative '../autotoolTest'
 
 class AutotoolAccount < AutotoolTest
   def ensureTutor(schule, vorlesung, student, funktion)

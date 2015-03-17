@@ -62,7 +62,7 @@ class AutotoolEinsendung < AutotoolAccount
     @driver.find_element(:xpath, "/html/body/form/table[10]/tbody/tr[1]/td/textarea").clear
     @driver.find_element(:xpath, "/html/body/form/table[10]/tbody/tr[1]/td/textarea").send_key einsendung
     @driver.find_element(:xpath, "/html/body/form/table[10]/tbody/tr[3]/td/input").click
-    angezeigt = @driver.find_element(:xpath, "/html/body/form").attribute('innerHTML').include?(readFile('latest.report'))
+    angezeigt = @driver.find_element(:xpath, "/html/body/form").attribute('innerHTML').include?(readFile('../latest.report'))
     angelegt = existiertEinsendung?(student['SNr'], aufgabe['ANr'])
     assert(!angelegt, @fehler['keinTestEinsendung'])
     angelegt
