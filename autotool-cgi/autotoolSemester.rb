@@ -60,7 +60,7 @@ class AutotoolSemester < AutotoolAccount
     select_element(:xpath, "/html/body/form/table[8]/tbody/tr[3]/td[2]/select[6]", ende.strftime('%S'))
     @driver.find_elements(:xpath, "/html/body/form/input[@type='submit']")[2].click
     existiertNeu2 = existiertSemester?(schule['UNr'], name)
-    assert(existiertNeu2, @fehler['keineSchule'])
+    assert(existiertNeu2, @fehler['keinSemester'])
     assert_equal(semester['ENr'], getSemester(schule['UNr'], name)['ENr'], @fehler['nichtBearbeitetSchule'])
   ensure
     semesterEntfernen(schule['UNr'], semester['Name']) unless !existiert

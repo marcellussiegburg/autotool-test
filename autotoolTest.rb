@@ -4,18 +4,31 @@ gem 'minitest'
 require 'fileutils'
 require 'minitest/autorun'
 require 'selenium-webdriver'
+require 'headless'
 require 'mysql'
 require 'yaml'
 
 class AutotoolTest < MiniTest::Test
   def setup
+    number = rand(999) + 1000 * ENV['TEST_ENV_NUMBER'].to_i
+    @headless = Headless.new(:display => number, :autopick => true, :reuse => false, :destroy_at_exit => true)
+    @headless.start
     @config = YAML.load_file '../config.yaml'
     @ui = YAML.load_file 'ui.yaml'
     @fehler = YAML.load_file '../fehler.yaml'
     @base_url = @config['url']
-    sleep(5)
-    @driver = Selenium::WebDriver.for(:firefox)
+    profile = Selenium::WebDriver::Firefox::Profile.new
+    profile['webdriver_firefox_port'] = 7000 + number
+    profile.native_events = false
+    profile['general.useragent.override'] = zufallsWort(60)
+    @driver = Selenium::WebDriver.for(:firefox, :profile => profile)
+    #@driver = Selenium::WebDriver.for(:chrome)
     @db = Mysql.new @config['dbServer'], @config['dbUser'], @config['dbPasswort'], @config['db']
+  rescue Selenium::WebDriver::Error::WebDriverError
+    @headless.destroy
+    STDOUT.print '-'
+    STDOUT.flush
+    setup
   end
 
   def zufallsWort(laenge)
@@ -529,6 +542,7 @@ class AutotoolTest < MiniTest::Test
 
   def teardown
     @driver.quit
+    @headless.destroy
     @db.close
   end
 end

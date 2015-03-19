@@ -14,6 +14,8 @@ class AutotoolSchule < AutotoolAccount
     angelegt = existiertSchule?(name)
     assert(angelegt, @fehler['nachSchule'])
     angelegt
+  ensure
+    schuleEntfernen(name) unless !angelegt
   end
 
   def schuleBearbeiten(schule, name, suffix)
