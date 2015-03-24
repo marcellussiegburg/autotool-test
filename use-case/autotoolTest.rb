@@ -11,22 +11,23 @@ require 'yaml'
 class AutotoolTest < MiniTest::Test
   def setup
     number = rand(9999) + 10000 * ENV['TEST_ENV_NUMBER'].to_i
-    @headless = Headless.new(:display => number, :autopick => true, :reuse => false, :destroy_at_exit => true)
-    @headless.start
     @config = YAML.load_file '../config.yaml'
     @ui = YAML.load_file 'ui.yaml'
     @fehler = YAML.load_file '../fehler.yaml'
     @base_url = @config['url']
-    sleep(2)
     profile = Selenium::WebDriver::Firefox::Profile.new
     profile['webdriver_firefox_port'] = 7000 + number
     profile.native_events = false
     profile['general.useragent.override'] = zufallsWort(60)
-    @driver = Selenium::WebDriver.for(:firefox, :profile => profile)
-    #@driver = Selenium::WebDriver.for(:chrome)
+    capabilities = Selenium::WebDriver::Remote::Capabilities.firefox(:firefox_profile => profile)
+    @driver = Selenium::WebDriver.for(:remote, :desired_capabilities => capabilities)
     @db = Mysql.new @config['dbServer'], @config['dbUser'], @config['dbPasswort'], @config['db']
+  rescue NameError, Timeout::Error
+    STDOUT.print '_'
+    STDOUT.flush
+    sleep(5)
+    setup
   rescue Selenium::WebDriver::Error::WebDriverError
-    @headless.destroy
     STDOUT.print '-'
     STDOUT.flush
     setup
@@ -125,9 +126,11 @@ class AutotoolTest < MiniTest::Test
     motd = testWort
     vorlesungAnlegen(enr, name, unr, motd)
     vorlesung = getVorlesung(enr, name, unr, motd)
+    vorlesungOrdnerAnlegen(vorlesung['VNr'])
     funktion.call(vorlesung)
   ensure
     vorlesungEntfernen(enr, name, unr, motd)
+    vorlesungOrdnerEntfernen(vorlesung['VNr'])
   end
 
   def mitSemester(unr, funktion)
@@ -316,6 +319,18 @@ class AutotoolTest < MiniTest::Test
 
   def aufgabeEntfernen(vnr, name, hinweis)
     aufgaben = @db.query 'DELETE FROM aufgabe WHERE VNr = ' + vnr + ' AND Name = \'' + name + '\' AND Remark = \'' + hinweis + '\''
+  end
+
+  def vorlesungOrdnerAnlegen(vnr)
+    pfad = '/space/autotool/done/' + vnr
+    unless File.directory?(pfad)
+      FileUtils.mkdir_p(pfad, :mode => 0777)
+    end
+  end
+
+  def vorlesungOrdnerEntfernen(vnr)
+    pfad = '/space/autotool/done/' + vnr
+    FileUtils.rm_r(pfad, :force => true)
   end
 
   def einsendungAnlegen(student, vnr, anr)
@@ -543,7 +558,6 @@ class AutotoolTest < MiniTest::Test
 
   def teardown
     @driver.quit
-    @headless.destroy
     @db.close
   end
 end
