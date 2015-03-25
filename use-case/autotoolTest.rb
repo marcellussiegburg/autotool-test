@@ -4,13 +4,17 @@ gem 'minitest'
 require 'fileutils'
 require 'minitest/autorun'
 require 'selenium-webdriver'
-require 'headless'
 require 'mysql'
 require 'yaml'
 
 class AutotoolTest < MiniTest::Test
+  def initialize(arg)
+    super(arg)
+    @failure = 0
+  end
+
   def setup
-    number = rand(9999) + 10000 * ENV['TEST_ENV_NUMBER'].to_i
+    number = rand(100) + 100 * ENV['TEST_ENV_NUMBER'].to_i
     @config = YAML.load_file '../config.yaml'
     @ui = YAML.load_file 'ui.yaml'
     @fehler = YAML.load_file '../fehler.yaml'
@@ -23,14 +27,24 @@ class AutotoolTest < MiniTest::Test
     @driver = Selenium::WebDriver.for(:remote, :desired_capabilities => capabilities)
     @db = Mysql.new @config['dbServer'], @config['dbUser'], @config['dbPasswort'], @config['db']
   rescue NameError, Timeout::Error
-    STDOUT.print '_'
-    STDOUT.flush
-    sleep(5)
-    setup
+    if @failure < 20 then
+      @failure = @failure + 1
+      STDOUT.print '_'
+      STDOUT.flush
+      sleep(10)
+      setup
+    else
+      raise
+    end
   rescue Selenium::WebDriver::Error::WebDriverError
-    STDOUT.print '-'
-    STDOUT.flush
-    setup
+    if @failure < 20 then
+      @failure = @failure + 1
+      STDOUT.print '-'
+      STDOUT.flush
+      setup
+    else
+      raise
+    end
   end
 
   def zufallsWort(laenge)

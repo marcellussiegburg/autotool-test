@@ -57,7 +57,7 @@ class AutotoolStatistikTest < AutotoolStatistik
                 mitEinschreibungen studenten.map { |s| s['SNr'] }, gruppe['GNr'], ->() {
                   mitEinsendungen studenten, vorlesung['VNr'], aufgaben.map { |a| a['ANr'] }, ->() {
                     ensureTutor schule, vorlesung, student, ->() {
-                      aufgabeStatistikGui(vorlesung, semester, aufgaben, [student])
+                      aufgaben.map { |aufgabe| aufgabeStatistikGui(vorlesung, semester, aufgabe, [student]) }
                     }
                   }
                 }
