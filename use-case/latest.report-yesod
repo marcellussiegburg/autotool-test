@@ -1,0 +1,35 @@
+<pre class="alert-success">gelesen: e (j (b , i ), f (m (l (k , d ), g ), c (a , h )))</pre><pre class="alert-success">partiell korrekt?</pre><pre class="alert-success">Ihr Baum t ist e (j (b , i ), f (m (l (k , d ), g ), c (a , h )))
+               
+                   e               
+                   |               
+                   +----\          
+                   |    |          
+                   j    f          
+                   |    |          
+                   +-i  +------\   
+                   |    |      |   
+                   `-b  m      c   
+                        |      |   
+                        +-g    +-h 
+                        |      |   
+                        `-l    `-a 
+                          |        
+                          +-d      
+                          |        
+                          `-k      </pre><pre class="alert-success">total korrekt?</pre><pre class="alert-success">Preorder () =
+    Preorder (Eingabe) = [ e , j
+                         , b , i , f , m , l , k , d , g
+                         , c , a , h ]
+    Preorder (Gesucht) = [ e , j , b
+                         , i , f , m , l , k , d , g , c
+                         , a , h ]
+    stimmen überein? True
+Inorder () =
+    Inorder (Eingabe) = [ b , j
+                        , i , e , k , l , d , m , g , f
+                        , a , c , h ]
+    Inorder (Gesucht) = [ b , j , i
+                        , e , k , l , d , m , g , f , a
+                        , c , h ]
+    stimmen überein? True</pre><pre class="alert-success">stimmt alles überein?</pre><blockquote class="alert-success"><pre>Ja.</pre></blockquote><pre class="alert-success">Bewertung der Einsendung: Okay
+                              { punkte = 1, size_ = 13 }</pre>

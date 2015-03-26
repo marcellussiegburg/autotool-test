@@ -63,16 +63,17 @@ class AutotoolTest < MiniTest::Test
     cacheEntfernen(vnr)
   end
 
-  def mitEinsendungen(studenten, vnr, anrs, funktion)
-    if studenten.size == 1 and anrs.size == 1 then
-      mitEinsendung studenten.shift, vnr, anrs.shift, ->(einsendung) {
+  def mitEinsendungen(studenten, vnr, aufgaben, funktion)
+    if studenten.size == 1 and aufgaben.size == 1 then
+      mitEinsendung studenten.shift, vnr, aufgaben.shift['ANr'], ->(einsendung) {
         funktion.call()
       }
     elsif studenten.size > 1 then
-      mitEinsendungen([studenten.shift], vnr, anrs, ->() {mitEinsendungen(studenten, vnr, anrs, funktion)})
-    elsif anrs.size > 1 then
-      mitEinsendungen(studenten, vnr, [anrs.shift], ->() {mitEinsendungen(studenten, vnr, anrs, funktion)})
+      mitEinsendungen([studenten.shift.clone], vnr, aufgaben.clone, ->() {mitEinsendungen(studenten, vnr, aufgaben, funktion)})
+    elsif aufgaben.size > 1 then
+      mitEinsendungen(studenten.clone, vnr, [aufgaben.shift.clone], ->() {mitEinsendungen(studenten, vnr, aufgaben, funktion)})
     else
+      puts 'foo'
       funktion.call()
     end
   end
@@ -85,9 +86,9 @@ class AutotoolTest < MiniTest::Test
     einsendungEntfernen(student, vnr, anr)
   end
 
-  def mitEinschreibungen(snrs, gnr, funktion)
-    if snrs.size > 0 then
-      mitEinschreibung(snrs.shift, gnr, ->() { mitEinschreibungen(snrs, gnr, funktion) })
+  def mitEinschreibungen(studenten, gnr, funktion)
+    if studenten.size > 0 then
+      mitEinschreibung(studenten.shift['SNr'], gnr, ->() { mitEinschreibungen(studenten, gnr, funktion) })
     else
       funktion.call()
     end
@@ -373,9 +374,7 @@ class AutotoolTest < MiniTest::Test
 
   def getEinsendung(snr, anr)
     einsendungen = @db.query 'SELECT * FROM stud_aufg WHERE SNr = ' + snr + ' AND ANr = ' + anr
-    einsendungen.each_hash do |einsendung|
-      return einsendung
-    end
+    return einsendungen.fetch_hash
   end
 
   def existiertEinsendung?(snr, anr)

@@ -46,20 +46,25 @@ class AutotoolStatistik < AutotoolAccount
   end
 
   def aufgabeStatistikGui(vorlesung, semester, aufgabe, studenten)
+    studs = studenten.clone.map { |stud| stud['SNr'] }
     click_element(:xpath, "/html/body/form/table[3]/tbody/tr[1]/td[2]/input", semester['Name'])
     click_element(:xpath, "/html/body/form/table[3]/tbody/tr[2]/td[2]/input", vorlesung['Name'])
     click_element(:xpath, "/html/body/form/table[5]/tbody/tr/td[2]/input", "Tutor")
     click_element(:xpath, "/html/body/form/table[6]/tbody/tr/td[2]/input", "Aufgaben")
     click_element(:xpath, "/html/body/form/table[7]/tbody/tr/td[2]/input", aufgabe['Name'])
     click_element(:xpath, "/html/body/form/table[7]/tbody/tr[2]/td[2]/input", "Statistics")
-    @driver.find_elements(:xpath, "/html/body/div/div/form/table/tbody/tr").drop(1).each do |row|
+    @driver.find_elements(:xpath, "/html/body/form/table[8]/tbody/tr").drop(1).each do |row|
       mnr = row.find_element(:xpath, "td[1]").text
       vorname = row.find_element(:xpath, "td[2]").text
       name = row.find_element(:xpath, "td[3]").text
       student = getStudentNoMail(mnr, vorname, name)
-      einsendung = getEinsendung(student['SNr'], aufgabe['ANr'])
-      assert_equal(row.find_element(:xpath, "td[4]").text, einsendung['Ok'])
-      assert_equal(row.find_element(:xpath, "td[5]").text, einsendung['No'])
+      if studs.include?(student['SNr']) then
+        studs.delete(student['SNr'])
+        einsendung = getEinsendung(student['SNr'], aufgabe['ANr'])
+        assert_equal(row.find_element(:xpath, "td[4]").text, einsendung['Ok'])
+        assert_equal(row.find_element(:xpath, "td[5]").text, einsendung['No'])
+      end
     end
+    assert(studs.empty?, @fehler['nachStatistik'])
   end
 end
